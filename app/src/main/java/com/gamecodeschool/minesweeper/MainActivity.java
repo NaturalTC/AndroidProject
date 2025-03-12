@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +28,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int mines = 20;
     private static final float MAX_MINES_RATIO = .3f;
     private static final float MIN_MINES_RATIO = .1f;
-    private ImageButton upArrowGrid = null;
     TextView gridDisplay = null;
     TextView mineDisplay = null;
 
@@ -97,9 +97,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             gridDisplay.setText(gridSize + "x" + gridSize);
         }
     }
+    private boolean isMineRatioValid() {
+        int minMines = (int) (MIN_MINES_RATIO * gridSize * gridSize);
+        int maxMines = (int) (MAX_MINES_RATIO * gridSize * gridSize);
+        return mines >= minMines && mines <= maxMines;
+    }
 
     public void runTest(View v) {
-        displayPlayBoard(gridSize);
+        if (isMineRatioValid()) {
+            displayPlayBoard(gridSize);
+        } else {
+            Toast.makeText(this, "Invalid Mine Count", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void displayPlayBoard(int grid) {
@@ -126,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 LinearLayout.LayoutParams.WRAP_CONTENT
         ));
 
-        // Add 0 placeholder
+        // Adding 0 to top left
         TextView emptyLabel = new TextView(this);
         emptyLabel.setLayoutParams(myLayoutParams);
         emptyLabel.setText("0");
@@ -139,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             colLabel.setText(String.valueOf(col));
             colLabel.setLayoutParams(colLabelParams);
             colLabel.setGravity(Gravity.CENTER);
-
             topLabelLayout.addView(colLabel);
         }
 
@@ -171,11 +179,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         setContentView(myLayout);
     }
-
-
-
-
-
 
     @Override
     public void onClick(View v) {
