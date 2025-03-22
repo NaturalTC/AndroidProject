@@ -254,53 +254,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rootLayout.addView(bottomLayout);
         setContentView(rootLayout);
     }
-    private int getColorForNumber(int number) {
-        switch (number) {
-            case 1:
-                return Color.BLUE;
-            case 2:
-                return Color.GREEN;
-            case 3:
-                return Color.RED;
-            case 4:
-                return Color.rgb(0,0,139);
-            case 5:
-                return Color.rgb(139, 69, 19);
-            case 6:
-                return Color.CYAN;
-            case 7:
-                return Color.BLACK;
-            case 8:
-                return Color.GRAY;
-            default:
-                return Color.BLACK;
-        }
-    }
+
     private void updateBoard() {
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                MineCell cell = game.getCell(row, col);
-                Button btn = buttons[row][col];
-                if (cell.isRevealed) {
-                    btn.setClickable(false);
-                    if (cell.hasMine) {
-                        btn.setBackgroundColor(Color.RED);
-                    } else {
-                        btn.setBackgroundColor(Color.LTGRAY);
-                        if (cell.surroundingMines > 0) {
-                            btn.setPadding(5,5,5,5);
-                            btn.setText(String.valueOf(cell.surroundingMines));
-                            btn.setTextColor(getColorForNumber(cell.surroundingMines));
-                        } else {
-                            btn.setText("");
-                        }
-                    }
-                } else if (cell.isFlagged) {
-                    btn.setBackgroundColor(Color.YELLOW);
-                } else {
-                    btn.setText("");
-                    btn.setBackgroundColor(Color.DKGRAY);
-                }
+        for (MineCellButton[] buttonRow : buttons) {
+            for (MineCellButton btn : buttonRow) {
+                btn.render();
             }
         }
     }
@@ -314,15 +272,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MineCellButton btn = (MineCellButton) v;
         MineCell clickedCell = btn.cell;
 
-        if (clickedCell.isRevealed) return;
+        clickedCell.setClicked();
         if (clickedCell.hasMine) {
             btn.setBackgroundColor(Color.RED);
             revealAllMinesExceptClicked(clickedCell.row, clickedCell.col);
             stopTimer();
             restartButton.setBackgroundColor(Color.rgb(0,100,220));
             return;
-        } else {
-            game.revealCell(clickedCell.row, clickedCell.col);
         }
         updateBoard();
         checkForWin();
