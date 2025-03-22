@@ -1,5 +1,7 @@
 package com.gamecodeschool.minesweeper;
 
+import android.util.Log;
+
 import java.util.Random;
 
 public class MineSweeperGame {
@@ -22,7 +24,7 @@ public class MineSweeperGame {
     private void initializeGrid() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                grid[i][j] = new MineCell(i, j);
+                grid[i][j] = new MineCell(i, j, this);
             }
         }
     }
