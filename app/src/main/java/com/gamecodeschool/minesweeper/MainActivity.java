@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // UI Elements
     private TextView gridDisplay;
     private TextView mineDisplay;
+    private TextView scoreDisplay;
     private Button[][] buttons;
     private TextView timerDisplay;
     private Button restartButton;
@@ -57,12 +58,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mineDisplay = findViewById(R.id.mine_display);
 
     }
-    private void startNewGame() {
-        // Initialize the MineSweeperGame instance here
-        game = new MineSweeperGame(gridSize, gridSize, mines);
-        displayPlayBoard(gridSize);
-        startTimer();
-    }
+
+    // Start Game
+
     public void onPress(View view) {
         if (view.getId() == R.id.up_arrow_button_grid) addGrid();
         if (view.getId() == R.id.down_arrow_button_grid) subtractGrid();
@@ -105,6 +103,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Invalid Mine Count", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private void startNewGame() {
+        game = new MineSweeperGame(gridSize, gridSize, mines);
+        displayPlayBoard(gridSize);
+        startTimer();
+        //startScore();
+    }
+
+    @SuppressLint("SetTextI18n")
     private void displayPlayBoard(int grid) {
         // Root Layout
         LinearLayout rootLayout = new LinearLayout(this);
@@ -182,9 +189,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             boardLayout.addView(rowLayout);
         }
-        rootLayout.addView(boardLayout);
+
+        // Spacing Between Buttons
         myLayoutParams.setMargins(5,5,5,5);
-        // Bottom section for Timer, Mine Counter, and Restart Button
+
+        // Add all Layouts to my root
+        rootLayout.addView(boardLayout);
+
+        // Create Bottom layout
         LinearLayout bottomLayout = new LinearLayout(this);
         bottomLayout.setOrientation(LinearLayout.HORIZONTAL);
         bottomLayout.setGravity(Gravity.CENTER);
@@ -194,31 +206,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 LinearLayout.LayoutParams.WRAP_CONTENT
         ));
 
+        // Score Counter Display (Bottom Right)
+        scoreDisplay = new TextView(this);
+        scoreDisplay.setText(String.valueOf(gridSize*gridSize+mines));
+        scoreDisplay.setTextSize(18);
+        scoreDisplay.setGravity(Gravity.START);
+        scoreDisplay.setPadding(100, 20, 60, 20);
+
         // Mine Counter Display (Bottom Left)
         mineDisplay = new TextView(this);
         mineDisplay.setText(String.valueOf(mines));
         mineDisplay.setTextSize(18);
         mineDisplay.setGravity(Gravity.START);
-        mineDisplay.setPadding(20, 20, 20, 20);
+        mineDisplay.setPadding(20, 20, 60, 20);
 
         // Timer Display (Bottom Right)
         timerDisplay = new TextView(this);
-        timerDisplay.setText("0 seconds");
+        timerDisplay.setText("");
         timerDisplay.setTextSize(18);
         timerDisplay.setGravity(Gravity.END | Gravity.BOTTOM);
-        timerDisplay.setPadding(20, 20, 20, 20);
+        timerDisplay.setPadding(60, 20, 20, 20);
 
         // Restart Button (Bottom Center)
         restartButton = new Button(this);
         restartButton.setBackgroundColor(Color.LTGRAY);
         restartButton.setText("NEW GAME");
-        restartButton.setPadding(40, 20, 40, 20);
-        restartButton.setOnClickListener(v -> restartGame());
+        restartButton.setGravity(Gravity.CENTER);
+        restartButton.setPadding(0, 20, 0, 20);
+        restartButton.setOnClickListener(v -> {
+            /*// Create a new DialogShowNote called dialog
+            NewGameDialog dialog = new NewGameDialog();
+            // Create the dialog
+            dialog.show(getSupportFragmentManager(), "123");*/
+
+            ScoreDialog scoreDialog = new ScoreDialog();
+            scoreDialog.show(getSupportFragmentManager(), "scoreDialog");
+
+        });
 
         // Add views to bottom layout
+
         bottomLayout.addView(mineDisplay);
         bottomLayout.addView(restartButton);
         bottomLayout.addView(timerDisplay);
+        bottomLayout.addView(scoreDisplay);
         rootLayout.addView(bottomLayout);
         setContentView(rootLayout);
     }
@@ -284,7 +315,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Button clickedBtn = buttons[row][col];
                         clickedBtn.setBackgroundColor(Color.RED);
                         revealAllMinesExceptClicked(row, col);
-                        Toast.makeText(this, "Game Over!", Toast.LENGTH_SHORT).show();
                         stopTimer();
                         restartButton.setBackgroundColor(Color.rgb(0,100,220));
                         return;
@@ -311,10 +341,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (cell.isFlagged && !cell.hasMine) {
                     btn.setText("X");
                 }
-
                 btn.setClickable(false);
             }
         }
+        Toast.makeText(this,"Game Lost",Toast.LENGTH_SHORT).show();
         gameOver = true;
     }
     private void checkForWin() {
@@ -335,9 +365,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (allMinesFlagged && allNonMinesRevealed) {
             restartButton.setBackgroundColor(Color.GREEN);
+            Toast.makeText(this,"Game Win",Toast.LENGTH_SHORT).show();
             gameOver = true;
-        }
+            scoreDialogDisplay();
+        };
     }
+
+    private void scoreDialogDisplay() {
+        // Create a new DialogShowNote called dialog
+        ScoreDialog myscoredialog = new ScoreDialog();
+
+        // Create the dialog
+        myscoredialog.show(getSupportFragmentManager(), "ScoreDialog");
+    }
+
+
     @Override
     public boolean onLongClick(View v) {
         if (gameOver) {
@@ -367,6 +409,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.postDelayed(this, 1000);
         }
     };
+
     private void displayInitialConfigScreen() {
         setContentView(R.layout.activity_main);
         gridDisplay = findViewById(R.id.grid_display);
@@ -374,6 +417,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gridDisplay.setText(gridSize + "x" + gridSize);
         mineDisplay.setText(String.valueOf(mines));
     }
+
     private void startTimer() {
         startTime = System.currentTimeMillis();
         handler.post(updateTimer);
@@ -381,9 +425,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void stopTimer() {
         handler.removeCallbacks(updateTimer);
     }
-    private void restartGame() {
-        stopTimer();
-        gameOver = false;
-        displayInitialConfigScreen();
+
+    public void restartGame() {
+            stopTimer();
+            gameOver = false;
+            displayInitialConfigScreen();
     }
 }
