@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int MAX_GRID_SIZE = 15;
     private static final int MIN_GRID_SIZE = 5;
     private int mines = 20;
+    private int score = gridSize*gridSize+mines;
     private static final float MAX_MINES_RATIO = 0.3f;
     private static final float MIN_MINES_RATIO = 0.1f;
 
@@ -208,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Score Counter Display (Bottom Right)
         scoreDisplay = new TextView(this);
-        scoreDisplay.setText(String.valueOf(gridSize*gridSize+mines));
+        scoreDisplay.setText(String.valueOf(""));
         scoreDisplay.setTextSize(18);
         scoreDisplay.setGravity(Gravity.START);
         scoreDisplay.setPadding(100, 20, 60, 20);
@@ -234,13 +235,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         restartButton.setGravity(Gravity.CENTER);
         restartButton.setPadding(0, 20, 0, 20);
         restartButton.setOnClickListener(v -> {
-            /*// Create a new DialogShowNote called dialog
+
+            // Create a new DialogShowNote called dialog
             NewGameDialog dialog = new NewGameDialog();
             // Create the dialog
-            dialog.show(getSupportFragmentManager(), "123");*/
+            dialog.show(getSupportFragmentManager(), "Confirm_popup");
 
-            ScoreDialog scoreDialog = new ScoreDialog();
-            scoreDialog.show(getSupportFragmentManager(), "scoreDialog");
+          /*  ScoreDialog scoreDialog = new ScoreDialog();
+            scoreDialog.show(getSupportFragmentManager(), "scoreDialog");*/
 
         });
 
@@ -410,6 +412,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    private Runnable updateScore = new Runnable() {
+        @Override
+        public void run() {
+            long elapsedScore = score - 1;
+            scoreDisplay.setText(score);
+            handler.postDelayed(this, 6000);
+        }
+    };
+
     private void displayInitialConfigScreen() {
         setContentView(R.layout.activity_main);
         gridDisplay = findViewById(R.id.grid_display);
@@ -421,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void startTimer() {
         startTime = System.currentTimeMillis();
         handler.post(updateTimer);
+        handler.post();
     }
     private void stopTimer() {
         handler.removeCallbacks(updateTimer);
