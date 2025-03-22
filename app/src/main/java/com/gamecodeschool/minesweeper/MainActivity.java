@@ -432,7 +432,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void startTimer() {
         startTime = System.currentTimeMillis();
         handler.post(updateTimer);
-        handler.post();
+        // handler.post();
     }
     private void stopTimer() {
         handler.removeCallbacks(updateTimer);
