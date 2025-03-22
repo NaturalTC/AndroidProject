@@ -281,12 +281,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             for (int col = 0; col < gridSize; col++) {
                 MineCell cell = game.getCell(row, col);
                 Button btn = buttons[row][col];
+                btn.setClickable(cell.clickable());
+                btn.setBackgroundColor(cell.color());
                 if (cell.isRevealed) {
-                    btn.setClickable(false);
                     if (cell.hasMine) {
-                        btn.setBackgroundColor(Color.RED);
                     } else {
-                        btn.setBackgroundColor(Color.LTGRAY);
                         if (cell.surroundingMines > 0) {
                             btn.setPadding(5,5,5,5);
                             btn.setText(String.valueOf(cell.surroundingMines));
@@ -296,10 +295,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }
                 } else if (cell.isFlagged) {
-                    btn.setBackgroundColor(Color.YELLOW);
                 } else {
                     btn.setText("");
-                    btn.setBackgroundColor(Color.DKGRAY);
                 }
             }
         }

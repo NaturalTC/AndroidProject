@@ -1,5 +1,6 @@
 package com.gamecodeschool.minesweeper;
 
+import android.graphics.Color;
 import android.util.Log;
 
 public class MineCell {
@@ -31,5 +32,20 @@ public class MineCell {
         if (!this.hasMine && !this.isRevealed) {
             game.revealCell(this.row, this.col);
         }
+    }
+
+    public boolean clickable() {
+        return !this.isRevealed;
+    }
+
+    public int color() {
+        if (this.isRevealed && this.hasMine) {
+            return Color.RED;
+        } else if (this.isRevealed) {
+            return Color.LTGRAY;
+        } else if (this.isFlagged) {
+            return Color.YELLOW;
+        }
+        return Color.DKGRAY;
     }
 }
