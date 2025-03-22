@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int MAX_GRID_SIZE = 15;
     private static final int MIN_GRID_SIZE = 5;
     private int mines = 20;
-    private int score = gridSize*gridSize+mines;
     private static final float MAX_MINES_RATIO = 0.3f;
     private static final float MIN_MINES_RATIO = 0.1f;
 
@@ -400,26 +399,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         return false;
     }
-    private Runnable updateTimer = new Runnable() {
+    private Runnable renderApp = new Runnable() {
         @Override
         public void run() {
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            int hours = (int) (elapsedTime / (1000 * 60 * 60));
-            int minutes = (int) ((elapsedTime / (1000 * 60)) % 60);
-            int seconds = (int) ((elapsedTime / 1000) % 60);
-            timerDisplay.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+            timerDisplay.setText(getDisplayTime());
+            scoreDisplay.setText(String.valueOf(getScore()));
             handler.postDelayed(this, 1000);
         }
     };
 
-    private Runnable updateScore = new Runnable() {
-        @Override
-        public void run() {
-            long elapsedScore = score - 1;
-            scoreDisplay.setText(score);
-            handler.postDelayed(this, 6000);
-        }
-    };
+    private int getScore() {
+        return Math.max(((int)(Math.pow(gridSize, 2)) + mines - getElapsedTimeSeconds() / 6), 0);
+    }
+
+    private int getElapsedTimeSeconds() {
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        int seconds = (int) ((elapsedTime / 1000) % 60);
+        return seconds;
+    }
+
+    private String getDisplayTime() {
+        int totalSeconds = getElapsedTimeSeconds();
+        int remainderSeconds = totalSeconds % 60;
+        int minutes = (totalSeconds / 60) % 60;
+        int hours = totalSeconds / 3600;
+        return String.format("%02d:%02d:%02d", hours, minutes, remainderSeconds);
+    }
 
     private void displayInitialConfigScreen() {
         setContentView(R.layout.activity_main);
@@ -431,11 +436,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void startTimer() {
         startTime = System.currentTimeMillis();
-        handler.post(updateTimer);
+        handler.post(renderApp);
         // handler.post();
     }
     private void stopTimer() {
-        handler.removeCallbacks(updateTimer);
+        handler.removeCallbacks(renderApp);
     }
 
     public void restartGame() {
