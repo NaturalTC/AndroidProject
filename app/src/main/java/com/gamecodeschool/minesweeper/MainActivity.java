@@ -308,19 +308,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (gameOver) return;
-        MineCell clickedCell;
-        MineCellButton clickedButton;
-        if (v instanceof MineCellButton) {
-            clickedButton = (MineCellButton) v;
-            clickedCell = clickedButton.cell;
-        } else {
-            System.out.println("don't click me!");
+        if (!(v instanceof MineCellButton)) {
             return;
         }
+        MineCellButton btn = (MineCellButton) v;
+        MineCell clickedCell = btn.cell;
 
         if (clickedCell.isRevealed) return;
         if (clickedCell.hasMine) {
-            clickedButton.setBackgroundColor(Color.RED);
+            btn.setBackgroundColor(Color.RED);
             revealAllMinesExceptClicked(clickedCell.row, clickedCell.col);
             stopTimer();
             restartButton.setBackgroundColor(Color.rgb(0,100,220));
@@ -330,7 +326,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         updateBoard();
         checkForWin();
-        return;
     }
     private void revealAllMinesExceptClicked(int clickedRow, int clickedCol) {
         for (int row = 0; row < gridSize; row++) {
@@ -389,18 +384,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (gameOver) {
             return false;
         }
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                if (buttons[row][col] == v) {
-                    game.toggleFlag(row, col);
-                    updateBoard();
-                    mineDisplay.setText(String.valueOf(game.getRemainingFlags()));
-
-                    return true;
-                }
-            }
+        if (!(v instanceof MineCellButton)) {
+            return false;
         }
-        return false;
+        MineCellButton btn = (MineCellButton) v;
+        game.toggleFlag(btn.cell.row, btn.cell.col);
+        updateBoard();
+        mineDisplay.setText(String.valueOf(game.getRemainingFlags()));
+
+        return true;
     }
     private Runnable renderApp = new Runnable() {
         @Override
