@@ -5,8 +5,12 @@ public class MineCell {
     public boolean isRevealed;
     public boolean isFlagged;
     public int surroundingMines;
+    public int row;
+    public int col;
 
-    public MineCell() {
+    public MineCell(int row, int col) {
+        this.row = row;
+        this.col = col;
         this.hasMine = false;
         this.isRevealed = false;
         this.isFlagged = false;

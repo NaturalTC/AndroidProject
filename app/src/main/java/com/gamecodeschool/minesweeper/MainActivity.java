@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView gridDisplay;
     private TextView mineDisplay;
     private TextView scoreDisplay;
-    private Button[][] buttons;
+    private MineCellButton[][] buttons;
     private TextView timerDisplay;
     private Button restartButton;
     private long startTime;
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boardLayout.addView(topLabelLayout);
 
         // Initialize button grid
-        buttons = new Button[grid][grid];
+        buttons = new MineCellButton[grid][grid];
 
         // Create the grid
         for (int row = 0; row < grid; row++) {
@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             // Buttons for grid
             for (int col = 0; col < grid; col++) {
-                Button btn = new Button(this);
+                MineCellButton btn = new MineCellButton(this, game.getCell(row, col));
                 btn.setLayoutParams(myLayoutParams);
                 btn.setOnClickListener(this);
                 btn.setOnLongClickListener(this);
@@ -308,26 +308,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (gameOver) return;
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                if (buttons[row][col] == v) {
-                    if (game.getCell(row, col).isRevealed) return;
-                    if (game.getCell(row, col).hasMine) {
-                        Button clickedBtn = buttons[row][col];
-                        clickedBtn.setBackgroundColor(Color.RED);
-                        revealAllMinesExceptClicked(row, col);
-                        stopTimer();
-                        restartButton.setBackgroundColor(Color.rgb(0,100,220));
-                        return;
-                    } else {
-                        game.revealCell(row, col);
-                    }
-                    updateBoard();
-                    checkForWin();
-                    return;
-                }
-            }
+        if (!(v instanceof MineCellButton)) {
+            return;
         }
+        MineCellButton btn = (MineCellButton) v;
+        MineCell clickedCell = btn.cell;
+
+        if (clickedCell.isRevealed) return;
+        if (clickedCell.hasMine) {
+            btn.setBackgroundColor(Color.RED);
+            revealAllMinesExceptClicked(clickedCell.row, clickedCell.col);
+            stopTimer();
+            restartButton.setBackgroundColor(Color.rgb(0,100,220));
+            return;
+        } else {
+            game.revealCell(clickedCell.row, clickedCell.col);
+        }
+        updateBoard();
+        checkForWin();
     }
     private void revealAllMinesExceptClicked(int clickedRow, int clickedCol) {
         for (int row = 0; row < gridSize; row++) {
@@ -386,18 +384,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (gameOver) {
             return false;
         }
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                if (buttons[row][col] == v) {
-                    game.toggleFlag(row, col);
-                    updateBoard();
-                    mineDisplay.setText(String.valueOf(game.getRemainingFlags()));
-
-                    return true;
-                }
-            }
+        if (!(v instanceof MineCellButton)) {
+            return false;
         }
-        return false;
+        MineCellButton btn = (MineCellButton) v;
+        game.toggleFlag(btn.cell.row, btn.cell.col);
+        updateBoard();
+        mineDisplay.setText(String.valueOf(game.getRemainingFlags()));
+
+        return true;
     }
     private Runnable renderApp = new Runnable() {
         @Override
