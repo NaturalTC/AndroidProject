@@ -22,7 +22,7 @@ public class MineSweeperGame {
     private void initializeGrid() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                grid[i][j] = new MineCell();
+                grid[i][j] = new MineCell(i, j);
             }
         }
     }
@@ -103,8 +103,8 @@ public class MineSweeperGame {
     public int getRemainingFlags() {
         return totalMines - flagsPlaced;
     }
-    public MineCell getCell(int x, int y) {
-        return grid[x][y];
+    public MineCell getCell(int row, int col) {
+        return grid[row][col];
     }
     public boolean isGameOver() {
         return gameOver;
