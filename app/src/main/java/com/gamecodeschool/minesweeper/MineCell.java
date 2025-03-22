@@ -48,4 +48,34 @@ public class MineCell {
         }
         return Color.DKGRAY;
     }
+
+    public String text() {
+        if (this.isRevealed && this.surroundingMines > 0) {
+            return (String.valueOf(this.surroundingMines));
+        }
+        return "";
+    }
+
+    public int textColor() {
+        switch (this.surroundingMines) {
+            case 1:
+                return Color.BLUE;
+            case 2:
+                return Color.GREEN;
+            case 3:
+                return Color.RED;
+            case 4:
+                return Color.rgb(0,0,139);
+            case 5:
+                return Color.rgb(139, 69, 19);
+            case 6:
+                return Color.CYAN;
+            case 7:
+                return Color.BLACK;
+            case 8:
+                return Color.GRAY;
+            default:
+                return Color.BLACK;
+        }
+    }
 }
