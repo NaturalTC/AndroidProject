@@ -314,15 +314,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MineCellButton btn = (MineCellButton) v;
         MineCell clickedCell = btn.cell;
 
-        if (clickedCell.isRevealed) return;
+        clickedCell.setClicked();
         if (clickedCell.hasMine) {
             btn.setBackgroundColor(Color.RED);
             revealAllMinesExceptClicked(clickedCell.row, clickedCell.col);
             stopTimer();
             restartButton.setBackgroundColor(Color.rgb(0,100,220));
             return;
-        } else {
-            game.revealCell(clickedCell.row, clickedCell.col);
         }
         updateBoard();
         checkForWin();
