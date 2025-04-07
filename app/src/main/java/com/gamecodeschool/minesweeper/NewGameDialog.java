@@ -35,7 +35,6 @@ public class NewGameDialog extends DialogFragment  {
 
         builder.setView(dialogView).setMessage("New Game?");
 
-
         cancelBTN.setOnClickListener(v -> dismiss());
 
         restartBTN.setOnClickListener(new View.OnClickListener() {

@@ -1,17 +1,15 @@
 package com.gamecodeschool.minesweeper;
 
-import android.util.Log;
-
 import java.util.Random;
 
 public class MineSweeperGame {
-    private int rows, cols, totalMines, flagsPlaced;
+    private int totalRows, totalCols, totalMines, flagsPlaced;
     private MineCell[][] grid;
     private boolean gameOver;
 
     public MineSweeperGame(int rows, int cols, int mines) {
-        this.rows = rows;
-        this.cols = cols;
+        this.totalRows = rows;
+        this.totalCols = cols;
         this.totalMines = mines;
         this.flagsPlaced = 0;
         this.grid = new MineCell[rows][cols];
@@ -22,8 +20,8 @@ public class MineSweeperGame {
     }
 
     private void initializeGrid() {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (int i = 0; i < totalRows; i++) {
+            for (int j = 0; j < totalCols; j++) {
                 grid[i][j] = new MineCell(i, j, this);
             }
         }
@@ -34,8 +32,8 @@ public class MineSweeperGame {
         int placedMines = 0;
 
         while (placedMines < totalMines) {
-            int r = random.nextInt(rows);
-            int c = random.nextInt(cols);
+            int r = random.nextInt(totalRows);
+            int c = random.nextInt(totalCols);
 
             if (!grid[r][c].hasMine) {
                 grid[r][c].hasMine = true;
@@ -47,8 +45,8 @@ public class MineSweeperGame {
     private void calculateNums() {
         int[] directions = {-1, 0, 1};
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (int i = 0; i < totalRows; i++) {
+            for (int j = 0; j < totalCols; j++) {
                 if (grid[i][j].hasMine) continue;
                 int count = 0;
                 for (int dx : directions) {
@@ -56,7 +54,7 @@ public class MineSweeperGame {
                         int newX = i + dx;
                         int newY = j + dy;
 
-                        if (newX >= 0 && newX < rows && newY >= 0 && newY < cols) {
+                        if (newX >= 0 && newX < totalRows && newY >= 0 && newY < totalCols) {
                             if (grid[newX][newY].hasMine) {
                                 count++;
                             }
@@ -66,6 +64,19 @@ public class MineSweeperGame {
                 grid[i][j].surroundingMines = count;
             }
         }
+    }
+
+
+    public boolean isWin() {
+        for (int rowI = 0; rowI < totalRows; rowI++){
+            for (int colI=0; colI < totalCols; colI++) {
+                MineCell cell = this.getCell(rowI,colI);
+                if (!cell.isFinished()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public void revealCell(int x, int y) {
@@ -80,7 +91,7 @@ public class MineSweeperGame {
                 for (int dy = -1; dy <= 1; dy++) {
                     int newX = x + dx;
                     int newY = y + dy;
-                    if (newX >= 0 && newX < rows && newY >= 0 && newY < cols) {
+                    if (newX >= 0 && newX < totalRows && newY >= 0 && newY < totalCols) {
                         if (!grid[newX][newY].isRevealed && !grid[newX][newY].hasMine && !grid[newX][newY].isFlagged) {
                             revealCell(newX, newY);
                         }
