@@ -43,6 +43,9 @@ public class MineCell {
         return !this.isRevealed;
     }
 
+    public boolean isFinished() {
+        return !(this.hasMine && !this.isFlagged) && !(!this.hasMine && !this.isRevealed);
+    }
     public CellStatus status() {
         if (this.isRevealed && this.hasMine) {
             return CellStatus.RevealedMine;

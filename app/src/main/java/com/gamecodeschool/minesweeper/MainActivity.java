@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Handler handler = new Handler();
     private MineSweeperGame game;
     private boolean gameOver = false;
+    private ScoreBoard scoreBoard;
+
 
 
     @Override
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gridDisplay = findViewById(R.id.grid_display);
         mineDisplay = findViewById(R.id.mine_display);
 
+        // Fixed: Initialize scoreBoard
+        scoreBoard = new ScoreBoard();
     }
 
     // Start Game
@@ -97,11 +101,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return mines >= minMines && mines <= maxMines;
     }
     public void runTest(View v) {
-        if (isMineRatioValid()) {
-            startNewGame();
-        } else {
+        if (!isMineRatioValid()) {
             Toast.makeText(this, "Invalid Mine Count", Toast.LENGTH_SHORT).show();
+            return;
         }
+        startNewGame();
     }
 
     private void startNewGame() {
@@ -207,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ));
 
         // Score Counter Display (Bottom Right)
+        
         scoreDisplay = new TextView(this);
         scoreDisplay.setText(String.valueOf(""));
         scoreDisplay.setTextSize(18);
@@ -271,13 +276,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         MineCellButton btn = (MineCellButton) v;
         MineCell clickedCell = btn.cell;
-
         clickedCell.setClicked();
+
         if (clickedCell.hasMine) {
             btn.setBackgroundColor(Color.RED);
             revealAllMinesExceptClicked(clickedCell.row, clickedCell.col);
             stopTimer();
             restartButton.setBackgroundColor(Color.rgb(0,100,220));
+            endButton();
+            endButton();
             return;
         }
         updateBoard();
@@ -303,38 +310,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gameOver = true;
     }
     private void checkForWin() {
-        boolean allMinesFlagged = true;
-        boolean allNonMinesRevealed = true;
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                MineCell cell = game.getCell(row, col);
-
-                if (cell.hasMine && !cell.isFlagged) {
-                    allMinesFlagged = false;
-                }
-
-                if (!cell.hasMine && !cell.isRevealed) {
-                    allNonMinesRevealed = false;
-                }
-            }
-        }
-        if (allMinesFlagged && allNonMinesRevealed) {
+        if (game.isWin()) {
             restartButton.setBackgroundColor(Color.GREEN);
-            Toast.makeText(this,"Game Win",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Game Win", Toast.LENGTH_SHORT).show();
             gameOver = true;
-            scoreDialogDisplay();
-        };
+            int currentScore = getScore();
+
+            if (scoreBoard != null) {
+                scoreBoard.addScore(currentScore, "???");
+            }
+            endButton();
+        }
     }
 
-    private void scoreDialogDisplay() {
-        // Create a new DialogShowNote called dialog
-        ScoreDialog myscoredialog = new ScoreDialog();
-
-        // Create the dialog
-        myscoredialog.show(getSupportFragmentManager(), "ScoreDialog");
+    public void endButton() {
+        int currentScore = getScore();
+        restartButton.setOnClickListener(v -> {
+            ScoreDialog dialog = new ScoreDialog(currentScore, scoreBoard);
+            dialog.show(getSupportFragmentManager(), "ScoreDialog");
+        });
     }
-
-
     @Override
     public boolean onLongClick(View v) {
         if (gameOver) {
@@ -347,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         game.toggleFlag(btn.cell.row, btn.cell.col);
         updateBoard();
         mineDisplay.setText(String.valueOf(game.getRemainingFlags()));
-
+        checkForWin();
         return true;
     }
     private Runnable renderApp = new Runnable() {
@@ -360,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     private int getScore() {
-        return Math.max(((int)(Math.pow(gridSize, 2)) + mines - getElapsedTimeSeconds() / 6), 0);
+        return Math.max(((int) (Math.pow(gridSize, 2)) + mines - getElapsedTimeSeconds() / 6), 0);
     }
 
     private int getElapsedTimeSeconds() {
