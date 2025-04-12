@@ -13,9 +13,11 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
 
@@ -35,42 +37,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView timerDisplay;
     private Button restartButton;
     private long startTime;
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
     private MineSweeperGame game;
     private boolean gameOver = false;
     private ScoreBoard scoreBoard;
 
 
-
+    // --- START OF APP ---
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Adjust for system UI
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
         // Initialize UI
         gridDisplay = findViewById(R.id.grid_display);
         mineDisplay = findViewById(R.id.mine_display);
 
-        // Fixed: Initialize scoreBoard
+        // Initialize ScoreBoard
         scoreBoard = new ScoreBoard();
+
+        // Test Code
+        scoreBoard.addScore(20, "Jos");
+        scoreBoard.addScore(20, "CAR");
+        scoreBoard.addScore(30, "zZz");
+        scoreBoard.addScore(30, "Dil");
+        scoreBoard.addScore(40, "XPZ");
+        scoreBoard.addScore(50, "GOD");
+        scoreBoard.addScore(60, "Bit");
+        scoreBoard.addScore(60, "Byt");
+        scoreBoard.addScore(70, "And");
+
+
+
+        // -- RecyclerView setup --
+
+        // Find the RecyclerView by its ID
+        RecyclerView recyclerView = findViewById(R.id.score_recycler);
+
+        // Initialize the adapter with the score data
+        ScoreAdapter adapter = new ScoreAdapter(scoreBoard.getMainScores(), score -> Toast.makeText(this, "Hello", Toast.LENGTH_SHORT).show());
+
+        // Set the LayoutManager
+        recyclerView.
+                setLayoutManager(new LinearLayoutManager(this));
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        // Add a neat dividing line between items in the list
+        recyclerView.
+                addItemDecoration(new DividerItemDecoration(
+                        this,
+                        LinearLayoutManager.
+                        VERTICAL));
+
+        // *Set the Adapter
+        recyclerView.setAdapter(adapter);
+
+
     }
 
-    // Start Game
-
+    // --- UI (Up and Down Button) Link ID to Method ---
     public void onPress(View view) {
         if (view.getId() == R.id.up_arrow_button_grid) addGrid();
         if (view.getId() == R.id.down_arrow_button_grid) subtractGrid();
         if (view.getId() == R.id.up_arrow_button_mines) addMine();
         if (view.getId() == R.id.down_arrow_button_mines) subtractMine();
     }
+
+    // -- UI (Up and Down) Methods --
     private void subtractMine() {
         if (mines > 0) {
             mines--;
@@ -95,12 +130,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             gridDisplay.setText(gridSize + "x" + gridSize);
         }
     }
-    private boolean isMineRatioValid() {
-        int minMines = (int) (MIN_MINES_RATIO * gridSize * gridSize);
-        int maxMines = (int) (MAX_MINES_RATIO * gridSize * gridSize);
-        return mines >= minMines && mines <= maxMines;
-    }
-    public void runTest(View v) {
+
+    // ---- After UI Settings Decided ----
+
+    // --- Check the Settings
+    public void checkSettings(View v) {
         if (!isMineRatioValid()) {
             Toast.makeText(this, "Invalid Mine Count", Toast.LENGTH_SHORT).show();
             return;
@@ -108,13 +142,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startNewGame();
     }
 
+    private boolean isMineRatioValid() {
+        int minMines = (int) (MIN_MINES_RATIO * gridSize * gridSize);
+        int maxMines = (int) (MAX_MINES_RATIO * gridSize * gridSize);
+        return mines >= minMines && mines <= maxMines;
+    }
+
+    // --- Start Game If Proper Settings ---
     private void startNewGame() {
         game = new MineSweeperGame(gridSize, gridSize, mines);
         displayPlayBoard(gridSize);
         startTimer();
-        //startScore();
     }
 
+
+    // --- Create and Display the PlayBoard
     @SuppressLint("SetTextI18n")
     private void displayPlayBoard(int grid) {
         // Root Layout
@@ -211,9 +253,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ));
 
         // Score Counter Display (Bottom Right)
-        
+
         scoreDisplay = new TextView(this);
-        scoreDisplay.setText(String.valueOf(""));
+        scoreDisplay.setText("");
         scoreDisplay.setTextSize(18);
         scoreDisplay.setGravity(Gravity.START);
         scoreDisplay.setPadding(100, 20, 60, 20);
@@ -240,18 +282,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         restartButton.setPadding(0, 20, 0, 20);
         restartButton.setOnClickListener(v -> {
 
-            // Create a new DialogShowNote called dialog
+            // Dialog Popup - Restart Game
             NewGameDialog dialog = new NewGameDialog();
+
             // Create the dialog
             dialog.show(getSupportFragmentManager(), "Confirm_popup");
-
-          /*  ScoreDialog scoreDialog = new ScoreDialog();
-            scoreDialog.show(getSupportFragmentManager(), "scoreDialog");*/
 
         });
 
         // Add views to bottom layout
-
         bottomLayout.addView(mineDisplay);
         bottomLayout.addView(restartButton);
         bottomLayout.addView(timerDisplay);
@@ -259,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rootLayout.addView(bottomLayout);
         setContentView(rootLayout);
     }
+
 
     private void updateBoard() {
         for (MineCellButton[] buttonRow : buttons) {
@@ -314,6 +354,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             restartButton.setBackgroundColor(Color.GREEN);
             Toast.makeText(this, "Game Win", Toast.LENGTH_SHORT).show();
             gameOver = true;
+            stopTimer();
             int currentScore = getScore();
 
             if (scoreBoard != null) {
@@ -345,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkForWin();
         return true;
     }
-    private Runnable renderApp = new Runnable() {
+    private final Runnable renderApp = new Runnable() {
         @Override
         public void run() {
             timerDisplay.setText(getDisplayTime());
@@ -360,10 +401,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private int getElapsedTimeSeconds() {
         long elapsedTime = System.currentTimeMillis() - startTime;
-        int seconds = (int) ((elapsedTime / 1000) % 60);
-        return seconds;
+        return (int) ((elapsedTime / 1000) % 60);
     }
 
+    @SuppressLint("DefaultLocale")
     private String getDisplayTime() {
         int totalSeconds = getElapsedTimeSeconds();
         int remainderSeconds = totalSeconds % 60;
@@ -372,12 +413,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return String.format("%02d:%02d:%02d", hours, minutes, remainderSeconds);
     }
 
+    @SuppressLint({"NotifyDataSetChanged", "SetTextI18n"})
     private void displayInitialConfigScreen() {
         setContentView(R.layout.activity_main);
         gridDisplay = findViewById(R.id.grid_display);
         mineDisplay = findViewById(R.id.mine_display);
         gridDisplay.setText(gridSize + "x" + gridSize);
         mineDisplay.setText(String.valueOf(mines));
+
+        RecyclerView recyclerView = findViewById(R.id.score_recycler);
+        if (recyclerView != null) {
+            // Create or update the adapter with the score data
+            ScoreAdapter adapter = new ScoreAdapter(scoreBoard.getMainScores(), scores -> Toast.makeText(this, "Hello", Toast.LENGTH_SHORT).show());
+            recyclerView.setLayoutManager(new LinearLayoutManager(this)); // Set the LayoutManager
+            recyclerView.setAdapter(adapter);  // Set the Adapter to the RecyclerView
+            adapter.notifyDataSetChanged(); // Refresh the RecyclerView
+
+            recyclerView.addItemDecoration(
+                    new DividerItemDecoration(this, LinearLayoutManager.
+                            VERTICAL));
+        }
     }
 
     private void startTimer() {
