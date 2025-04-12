@@ -14,7 +14,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class ScoreDialog extends DialogFragment {
