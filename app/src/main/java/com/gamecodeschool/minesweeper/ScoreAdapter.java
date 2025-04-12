@@ -57,7 +57,6 @@ public class ScoreAdapter extends RecyclerView.Adapter<ScoreAdapter.ScoreViewHol
 
         // Store each score of the list
         ScoreBoard.ScoreEntry entry = scoreList.get(position);
-
         // Handle ties by checking if the current score is equal to the previous score
         int rank = position + 1;
         if (position > 0 && scoreList.get(position).score == scoreList.get(position - 1).score) {
