@@ -36,12 +36,14 @@ public class ScoreDialog extends DialogFragment {
         View view = requireActivity().getLayoutInflater().inflate(R.layout.score_display, null);
         builder.setView(view);
 
-        // Get UI elements
+        // Initialize UI elements Store UI elements into Array
         scoreViews[0] = view.findViewById(R.id.rank1);
         scoreViews[1] = view.findViewById(R.id.rank2);
         scoreViews[2] = view.findViewById(R.id.rank3);
         scoreViews[3] = view.findViewById(R.id.rank4);
         scoreViews[4] = view.findViewById(R.id.rank5);
+
+        // Initialize UI elements
         nameInput = view.findViewById(R.id.nameInput);
         okButton = view.findViewById(R.id.okButton);
 
