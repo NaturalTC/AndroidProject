@@ -1,18 +1,13 @@
 package com.gamecodeschool.minesweeper;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
-
-import java.util.Objects;
 
 public class NewGameDialog extends DialogFragment  {
     @Override
@@ -25,7 +20,7 @@ public class NewGameDialog extends DialogFragment  {
             getActivity().getLayoutInflater();
 
         View dialogView =
-            inflater.inflate(R.layout.popup, null);
+            inflater.inflate(R.layout.new_game_dialog, null);
 
         Button cancelBTN =
             dialogView.findViewById(R.id.back);

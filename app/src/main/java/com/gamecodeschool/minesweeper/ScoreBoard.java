@@ -8,12 +8,25 @@ public class ScoreBoard {
     public static class ScoreEntry {
         int score;
         String name;
+        int time;
+        int clicks;
+        String date;
+        int mines;
+        String field;
 
-        public ScoreEntry(int score, String name) {
+        public ScoreEntry(int score, String name, int time, int clicks, String date, int mines, String field) {
             this.score = score;
             this.name = name;
+            this.time = time;
+            this.clicks = clicks;
+            this.date = date;
+            this.mines = mines;
+            this.field = field;
         }
     }
+
+
+
 
     // Declarations
     private static final int MAX_HIGH_SCORES = 5;
@@ -24,24 +37,29 @@ public class ScoreBoard {
     // Constructor
     public ScoreBoard() {
         highScores = new ArrayList<>();
-        mainScores = new ArrayList<>();  // Ensure mainScores is initialized
+        mainScores = new ArrayList<>();
     }
 
     // Method to add a score
-    public void addScore(int score, String name) {
+    public void addScore(ScoreEntry entry) {
+        mainScores.add(entry);
+        highScores.add(entry);
 
+        mainScores.sort(Comparator.comparingInt(e -> -e.score));
+        highScores.sort(Comparator.comparingInt(e -> -e.score));
 
-        mainScores.add(new ScoreEntry(score, name));
-        highScores.add(new ScoreEntry(score, name));
-
-        // Sort in descending order for both lists
-        mainScores.sort(Comparator.comparingInt(entry -> -entry.score)); // Sort mainScores in descending order
-        highScores.sort(Comparator.comparingInt(entry -> -entry.score)); // Sort highScores in descending order
         checkHighScore();
         checkMainScore();
-
-
     }
+
+    public int getRank(ScoreEntry entry) {
+        // Sort scores in descending order
+        highScores.sort(Comparator.comparingInt(e -> -e.score));
+
+        // Find the index of the entry and calculate rank (index + 1)
+        return highScores.indexOf(entry) + 1;
+    }
+
     public void checkHighScore(){
         // Keep only top 5 scores for highScores
         if (highScores.size() > MAX_HIGH_SCORES) {

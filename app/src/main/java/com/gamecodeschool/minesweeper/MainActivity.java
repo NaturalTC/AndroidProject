@@ -18,6 +18,10 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
 
@@ -58,15 +62,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         scoreBoard = new ScoreBoard();
 
         // Test Code
-        scoreBoard.addScore(20, "Jos");
-        scoreBoard.addScore(20, "CAR");
-        scoreBoard.addScore(30, "zZz");
-        scoreBoard.addScore(30, "Dil");
-        scoreBoard.addScore(40, "XPZ");
-        scoreBoard.addScore(50, "GOD");
-        scoreBoard.addScore(60, "Bit");
-        scoreBoard.addScore(60, "Byt");
-        scoreBoard.addScore(70, "And");
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Jos", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(15, "CAR", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(14, "zZz", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(13, "Dil", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(16, "XPZ", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(11, "GOD", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Bit", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Byt", 20, 20, "2023-01-01", 40, "10x10"));
+        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "And", 20, 20, "2023-01-01", 40, "10x10"));
 
 
 
@@ -76,7 +80,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         RecyclerView recyclerView = findViewById(R.id.score_recycler);
 
         // Initialize the adapter with the score data
-        ScoreAdapter adapter = new ScoreAdapter(scoreBoard.getMainScores(), score -> Toast.makeText(this, "Hello", Toast.LENGTH_SHORT).show());
+        ScoreAdapter adapter = new ScoreAdapter(scoreBoard.getMainScores(), score -> {
+            // Get the rank of the selected score entry
+            int rank = scoreBoard.getRank(score);
+
+            // Create the dialog and pass the entry and rank
+            StatSheetDialog statDialog = new StatSheetDialog(score, rank);
+            statDialog.show(getSupportFragmentManager(), "stat_dialog");
+        });
 
         // Set the LayoutManager
         recyclerView.
@@ -355,12 +366,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Game Win", Toast.LENGTH_SHORT).show();
             gameOver = true;
             stopTimer();
-            int currentScore = getScore();
-
-            if (scoreBoard != null) {
-                scoreBoard.addScore(currentScore, "???");
-            }
+            saveCurrentGameScore();
             endButton();
+        }
+    }
+
+
+
+    private void saveCurrentGameScore() {
+        int currentScore = getScore();
+        String playerName = "???";
+        int totalTime = game.getElapsedTime();
+        int clickCount = game.getClickCount();
+        String currentDate = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(new Date());
+        int totalMines = game.getMinesCount();
+        String gameField = game.getFieldRepresentation();
+
+        if (scoreBoard != null) {
+            ScoreBoard.ScoreEntry entry = new ScoreBoard.ScoreEntry(
+                    currentScore,
+                    playerName,
+                    totalTime,
+                    clickCount,
+                    currentDate,
+                    totalMines,
+                    gameField
+            );
+            scoreBoard.addScore(entry);
         }
     }
 
@@ -424,10 +456,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         RecyclerView recyclerView = findViewById(R.id.score_recycler);
         if (recyclerView != null) {
             // Create or update the adapter with the score data
-            ScoreAdapter adapter = new ScoreAdapter(scoreBoard.getMainScores(), scores -> Toast.makeText(this, "Hello", Toast.LENGTH_SHORT).show());
+            ScoreAdapter adapter = new ScoreAdapter(scoreBoard.getMainScores(), score -> {
+                // Get the rank of the selected score entry
+                int rank = scoreBoard.getRank(score);
+
+                // Create the dialog and pass the entry and rank
+                StatSheetDialog statDialog = new StatSheetDialog(score, rank);
+                statDialog.show(getSupportFragmentManager(), "stat_dialog");
+            });
             recyclerView.setLayoutManager(new LinearLayoutManager(this)); // Set the LayoutManager
-            recyclerView.setAdapter(adapter);  // Set the Adapter to the RecyclerView
-            adapter.notifyDataSetChanged(); // Refresh the RecyclerView
+            recyclerView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
 
             recyclerView.addItemDecoration(
                     new DividerItemDecoration(this, LinearLayoutManager.
@@ -438,7 +477,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void startTimer() {
         startTime = System.currentTimeMillis();
         handler.post(renderApp);
-        // handler.post();
     }
     private void stopTimer() {
         handler.removeCallbacks(renderApp);

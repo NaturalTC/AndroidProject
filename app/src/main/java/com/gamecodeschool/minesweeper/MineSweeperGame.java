@@ -7,6 +7,9 @@ public class MineSweeperGame {
     private MineCell[][] grid;
     private boolean gameOver;
 
+    private int clickCount = 0;        // Track clicks
+    private long startTime = System.currentTimeMillis();  // Track game start time
+
     public MineSweeperGame(int rows, int cols, int mines) {
         this.totalRows = rows;
         this.totalCols = cols;
@@ -66,11 +69,10 @@ public class MineSweeperGame {
         }
     }
 
-
     public boolean isWin() {
         for (int rowI = 0; rowI < totalRows; rowI++){
-            for (int colI=0; colI < totalCols; colI++) {
-                MineCell cell = this.getCell(rowI,colI);
+            for (int colI = 0; colI < totalCols; colI++) {
+                MineCell cell = this.getCell(rowI, colI);
                 if (!cell.isFinished()) {
                     return false;
                 }
@@ -81,11 +83,15 @@ public class MineSweeperGame {
 
     public void revealCell(int x, int y) {
         if (gameOver || grid[x][y].isRevealed || grid[x][y].isFlagged) return;
+
         grid[x][y].isRevealed = true;
+        clickCount++;  // Increment click count
+
         if (grid[x][y].hasMine) {
             gameOver = true;
             return;
         }
+
         if (grid[x][y].surroundingMines == 0) {
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dy = -1; dy <= 1; dy++) {
@@ -101,7 +107,6 @@ public class MineSweeperGame {
         }
     }
 
-    // Toggle flag on a cell
     public void toggleFlag(int x, int y) {
         if (!grid[x][y].isRevealed) {
             if (grid[x][y].isFlagged) {
@@ -113,13 +118,30 @@ public class MineSweeperGame {
             }
         }
     }
+
     public int getRemainingFlags() {
         return totalMines - flagsPlaced;
     }
+
     public MineCell getCell(int row, int col) {
         return grid[row][col];
     }
-    public boolean isGameOver() {
-        return gameOver;
+
+
+    public int getElapsedTime() {
+        long now = System.currentTimeMillis();
+        return (int) ((now - startTime) / 1000); // return in seconds
+    }
+
+    public int getClickCount() {
+        return clickCount;
+    }
+
+    public int getMinesCount() {
+        return totalMines;
+    }
+
+    public String getFieldRepresentation() {
+        return totalRows + "x" + totalCols;
     }
 }
