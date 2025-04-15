@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -19,7 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -45,8 +48,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MineSweeperGame game;
     private boolean gameOver = false;
     private ScoreBoard scoreBoard;
-
-
+    private JSONSerializer mSerializer;
+    private List<ScoreBoard.ScoreEntry> scoreList;
+private ScoreAdapter adapter;
     // --- START OF APP ---
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,17 +66,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         scoreBoard = new ScoreBoard();
 
         // Test Code
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Jos", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(15, "CAR", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(14, "zZz", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(13, "Dil", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(16, "XPZ", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(11, "GOD", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Bit", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Byt", 20, 20, "2023-01-01", 40, "10x10"));
-        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "And", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Jos", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(15, "CAR", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(14, "zZz", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(13, "Dil", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(16, "XPZ", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(11, "GOD", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Bit", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "Byt", 20, 20, "2023-01-01", 40, "10x10"));
+//        scoreBoard.addScore(new ScoreBoard.ScoreEntry(10, "And", 20, 20, "2023-01-01", 40, "10x10"));
 
 
+        // Create an instance of JSONSerializer if not done already
+        mSerializer = new JSONSerializer("NoteToSelf.json",
+                getApplicationContext());
+
+        try {
+            scoreList = mSerializer.load();
+            // Update the scoreBoard with the loaded data
+            for (ScoreBoard.ScoreEntry scoreEntry : scoreList) {
+                scoreBoard.addScore(scoreEntry);  // Add the loaded score entries to the scoreBoard
+            }
+        } catch (Exception e) {
+            scoreList = new ArrayList<ScoreBoard.ScoreEntry>();
+            Log.e("Error loading Scores: ", "", e);
+        }
 
         // -- RecyclerView setup --
 
@@ -80,13 +98,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         RecyclerView recyclerView = findViewById(R.id.score_recycler);
 
         // Initialize the adapter with the score data
-        ScoreAdapter adapter = new ScoreAdapter(scoreBoard.getMainScores(), score -> {
+        adapter = new ScoreAdapter(scoreBoard.getMainScores(), score -> {
             // Get the rank of the selected score entry
             int rank = scoreBoard.getRank(score);
 
             // Create the dialog and pass the entry and rank
             StatSheetDialog statDialog = new StatSheetDialog(score, rank);
             statDialog.show(getSupportFragmentManager(), "stat_dialog");
+
         });
 
         // Set the LayoutManager
@@ -335,7 +354,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stopTimer();
             restartButton.setBackgroundColor(Color.rgb(0,100,220));
             endButton();
-            endButton();
             return;
         }
         updateBoard();
@@ -374,15 +392,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void saveCurrentGameScore() {
-        int currentScore = getScore();
-        String playerName = "???";
-        int totalTime = game.getElapsedTime();
-        int clickCount = game.getClickCount();
-        String currentDate = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(new Date());
-        int totalMines = game.getMinesCount();
-        String gameField = game.getFieldRepresentation();
+        // Get current game information
+        int currentScore = getScore();  // Assuming you have this method to get the current score
+        String playerName = "???";  // You can prompt the user for their name if needed
+        int totalTime = game.getElapsedTime();  // Time elapsed during the game
+        int clickCount = game.getClickCount();  // Number of clicks made by the player
+        String currentDate = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(new Date());  // Current date
+        int totalMines = game.getMinesCount();  // Number of mines in the game
+        String gameField = game.getFieldRepresentation();  // Field representation (e.g., game state as a string)
 
+        // Check if scoreboard exists (assuming it's a List of ScoreEntry objects)
         if (scoreBoard != null) {
+            // Create a new score entry
             ScoreBoard.ScoreEntry entry = new ScoreBoard.ScoreEntry(
                     currentScore,
                     playerName,
@@ -392,9 +413,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     totalMines,
                     gameField
             );
+
+            // Add the entry to the scoreboard
             scoreBoard.addScore(entry);
         }
     }
+    public void saveMainScores() {
+        try {
+            // Save the updated scores list
+            mSerializer.save(scoreBoard.getMainScores());  // Pass the list of scores to save
+        } catch (Exception e) {
+            Log.e("Error saving scores: ", "", e);
+        }
+    }
+
 
     public void endButton() {
         int currentScore = getScore();
@@ -487,4 +519,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             gameOver = false;
             displayInitialConfigScreen();
     }
+
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void deleteScore(ScoreBoard.ScoreEntry entry) {
+        scoreBoard.removeScore(entry);
+        saveMainScores();
+        adapter.notifyDataSetChanged();
+    }
+
+
 }

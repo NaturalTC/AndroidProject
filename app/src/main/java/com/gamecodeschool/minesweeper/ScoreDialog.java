@@ -11,8 +11,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -36,14 +38,13 @@ public class ScoreDialog extends DialogFragment {
         View view = requireActivity().getLayoutInflater().inflate(R.layout.score_display, null);
         builder.setView(view);
 
-        // Initialize UI elements Store UI elements into Array
+        // Initialize UI elements
         scoreViews[0] = view.findViewById(R.id.rank1);
         scoreViews[1] = view.findViewById(R.id.rank2);
         scoreViews[2] = view.findViewById(R.id.rank3);
         scoreViews[3] = view.findViewById(R.id.rank4);
         scoreViews[4] = view.findViewById(R.id.rank5);
 
-        // Initialize UI elements
         nameInput = view.findViewById(R.id.nameInput);
         okButton = view.findViewById(R.id.okButton);
 
@@ -53,7 +54,6 @@ public class ScoreDialog extends DialogFragment {
             nameInput.setVisibility(View.VISIBLE);
             nameInput.requestFocus();
 
-            // Show keyboard safely
             nameInput.post(() -> {
                 InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 if (imm != null) {
@@ -68,7 +68,8 @@ public class ScoreDialog extends DialogFragment {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     if (playerRank != -1 && playerRank < scoreBoard.getHighScores().size()) {
-                        scoreBoard.getHighScores().get(playerRank).name = s.toString();
+                        String newName = s.toString();
+                        scoreBoard.getHighScores().get(playerRank).name = newName;
                         updateHighScoreUI();
                     }
                 }
@@ -77,6 +78,13 @@ public class ScoreDialog extends DialogFragment {
                 public void afterTextChanged(Editable s) {
                     if (s.length() >= 3) {
                         nameInput.setVisibility(View.GONE);
+
+                        // Hide keyboard
+                        InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.hideSoftInputFromWindow(nameInput.getWindowToken(), 0);
+                        }
+
                         updateHighScoreUI();
                         view.requestLayout();
                     }
@@ -87,7 +95,9 @@ public class ScoreDialog extends DialogFragment {
         }
 
         okButton.setOnClickListener(v -> {
+            // Save updated scores before restarting
             if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).saveMainScores(); // Add this in MainActivity
                 ((MainActivity) getActivity()).restartGame();
             }
             dismiss();
@@ -98,7 +108,7 @@ public class ScoreDialog extends DialogFragment {
 
     private void loadHighScores() {
         ArrayList<ScoreBoard.ScoreEntry> scores = new ArrayList<>(scoreBoard.getHighScores());
-        scores.sort(Comparator.comparingInt(a -> -a.score)); // Sort in descending order
+        scores.sort(Comparator.comparingInt(a -> -a.score)); // Sort descending
 
         int lastScore = -1;
         int rank = 1;
@@ -112,7 +122,6 @@ public class ScoreDialog extends DialogFragment {
                 scoreViews[i].setText(rank + "         -         " + entry.name + "         -         " + entry.score);
                 lastScore = entry.score;
 
-                // Determine player rank
                 if (entry.score == playerScore && playerRank == -1) {
                     playerRank = i;
                 }
