@@ -65,6 +65,17 @@ public class StatSheetDialog extends DialogFragment {
             }
         });
 
+        deleteBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity callingActivity = (MainActivity) getActivity();
+                assert callingActivity != null;
+                callingActivity.deleteScore(entry); // Custom method in MainActivity
+                dismiss();
+            }
+        });
+
+
         return builder.create();
     }
 }

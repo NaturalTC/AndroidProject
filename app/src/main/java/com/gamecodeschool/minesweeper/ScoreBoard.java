@@ -1,5 +1,10 @@
 package com.gamecodeschool.minesweeper;
 
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -23,8 +28,32 @@ public class ScoreBoard {
             this.mines = mines;
             this.field = field;
         }
-    }
 
+        public ScoreEntry(JSONObject jo) throws JSONException {
+            this.score = jo.getInt("score");
+            this.name = jo.getString("name");
+            this.time = jo.getInt("time");
+            this.clicks = jo.getInt("clicks");
+            this.date = jo.getString("date");
+            this.mines = jo.getInt("mines");
+            this.field = jo.getString("field");
+        }
+
+        // Convert ScoreEntry to JSONObject
+        public JSONObject convertToJSON() throws JSONException {
+            JSONObject jo = new JSONObject();
+            jo.put("score", this.score);
+            jo.put("name", this.name);
+            jo.put("time", this.time);
+            jo.put("clicks", this.clicks);
+            jo.put("date", this.date);
+            jo.put("mines", this.mines);
+            jo.put("field", this.field);
+            return jo;
+        }
+    }
+    
+    
 
 
 
@@ -50,6 +79,8 @@ public class ScoreBoard {
 
         checkHighScore();
         checkMainScore();
+
+        Log.d("JSONSerializer", "Saved JSON: " + mainScores.toString());
     }
 
     public int getRank(ScoreEntry entry) {
@@ -81,9 +112,9 @@ public class ScoreBoard {
     public ArrayList<ScoreEntry> getMainScores() {
         return mainScores;
     }
-
     // Method to remove a score from highScores
     public void removeScore(ScoreEntry entry) {
         highScores.remove(entry);
+        mainScores.remove(entry);
     }
 }
